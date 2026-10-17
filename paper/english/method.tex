@@ -2,11 +2,14 @@
 \input{method-figure}
 For an image $x$, a question $q$, and runtime-supplied candidate texts $C=(c_i)_{i=1}^{K}$, the model returns a normalized distribution over the current candidate slots. External question and candidate identifiers associate outputs with inputs; pointer prompts contain the image, question, and candidate text. This work studies mutually exclusive visual Choice decisions. The output distribution is defined over the supplied candidate set, and a held-out calibration stage adjusts its confidence.
 
-\subsection{Candidate encoding and set-conditioned scoring}
-The scorer first grounds each candidate in the image and question, then compares the resulting representations as a set. This separates the visual interpretation of an alternative from its role among the available choices.
+\subsection{Tree-masked multimodal encoding}
+We organize the input as a tree with a shared image prefix, a question prefix for each decision, and separate query and candidate suffixes. Common prefixes appear once in the packed sequence. A tree attention mask gives each token access to its causal predecessors within its segment and to all tokens on its ancestor path. Sibling candidate suffixes and distinct question branches are isolated. This organization shares visual and question context while preserving candidate-specific representations.
 
-\paragraph{Shared candidate branches.}
-Let $E_\theta$ denote the image--text backbone and its final valid-token representation. We construct a question representation $u=E_\theta(x,q)$ and a candidate representation $h_i=E_\theta(x,q\mathbin{\Vert}\texttt{Candidate:}\mathbin{\Vert}c_i)$ using shared parameters. Each branch is encoded independently of the other candidate texts. The language backbone uses causal attention within each branch. The implementation batches one question branch and one branch per candidate, each with its own token history, multimodal positions, attention mask, and final valid-token readout. Parameters are shared across branches; image encoding is performed within each branch.
+\paragraph{Branch representations.}
+Let $E_\theta$ denote the image--text backbone and its final valid-token representation along a root-to-leaf path. The query leaf yields $u=E_\theta(x,q)$, and candidate leaf $i$ yields $h_i=E_\theta(x,q\mathbin{\Vert}\texttt{Candidate:}\mathbin{\Vert}c_i)$. These expressions identify the context visible to each leaf. A packed backbone forward computes all leaf representations using shared parameters. Visual features are injected at the shared image prefix. Each token retains its original branch-local multimodal position, so moving a candidate within the packed input preserves its positional coordinates and visible context.
+
+\subsection{Set interaction and dynamic pointer}
+The leaf representations ground each candidate in the image and question. A question-local set module then compares the available alternatives and produces their decision scores.
 
 \paragraph{Position-free candidate interaction.}
 Writing the candidate representations as rows of $H$, we apply a shared input projection followed by a position-free candidate module $S_\phi$. The Set module uses self-attention over candidate representations, followed by shared per-row transformations. The query representation remains separate from this candidate self-attention stack. Candidate logits and probabilities are
@@ -20,10 +23,10 @@ where $d$ is the query--key dimension and $\mathcal V$ contains valid slots. Inv
 \paragraph{Permutation-equivariant scoring.}
 In exact arithmetic, shared row-wise transformations commute with a candidate permutation matrix $P$. Self-attention obeys $\operatorname{Attn}(PH)=P\operatorname{Attn}(H)$ because query, key, and value rows, together with the key mask, are permuted consistently. Residual connections and row-wise normalization preserve this property. Consequently $s(PH)=Ps(H)$ and $p(PH)=Pp(H)$ when branch preprocessing and positions are unchanged and no candidate index is injected.
 
-With a unique largest logit, permutation-equivariant scores preserve the selected candidate identity. For tied maxima, the selected candidate follows the first-slot tie-breaking rule. Floating-point reductions and changed batch shapes can also introduce numerical differences, so the mathematical property is distinct from bitwise reproducibility. Duplicate candidates are a different operation from permutation: adding another slot changes the softmax denominator and can change Set interactions.
+With a unique maximum, the selected candidate identity is preserved under candidate reordering.
 
 \paragraph{Question isolation and candidate-set dependence.}
-Separate questions occupy independent batch rows or separate inference calls. Read-only branch caches and question-local normalization and attention keep each question's scores independent of other questions. Within each question, Set attention conditions every candidate representation on the full candidate set. The relative probability $p_i/p_j=\exp(s_i-s_j)$ therefore depends on set-conditioned logits. Changing the candidate set can change the relative preference between two existing candidates while preserving isolation from other questions.
+The tree mask isolates distinct question branches, while Set attention and probability normalization operate within each question. These two levels of isolation keep each question's scores independent of other questions sharing the image prefix. Within each question, Set attention conditions every candidate representation on the full candidate set. The relative probability $p_i/p_j=\exp(s_i-s_j)$ therefore depends on set-conditioned logits. Changing the candidate set can change the relative preference between two existing candidates while preserving isolation from other questions.
 
 \subsection{Training and probability calibration}
 Cross-entropy supervises the correct candidate on each example. We complement this supervision with a group-level confidence objective during training and scalar temperature fitting after training.
@@ -49,12 +52,3 @@ For the registered VQA protocol, blank and duplicate candidate strings are prese
  =\operatorname{LSE}_{j\in\mathcal V}(s_j)-\operatorname{LSE}_{i\in G}(s_i).
 \end{equation}
 Labels supply supervision to the loss and evaluator; forward prompts contain the image, question, and candidate text. This convention preserves the official answer-text task while keeping slot and answer-event probabilities distinct.
-
-\subsection{Shared execution}
-The branch structure repeats image and question prefixes across candidate encodings. We reuse these common computations while retaining each branch's original token visibility and question-local readout.
-
-\paragraph{Shared-prefix inference.}
-At inference time, the causal branch computation is factored into a shared prefix and independently evaluated suffixes. For multiple questions about the same image, the image-containing prefix is evaluated once and its key--value states are reused by the question and candidate branches. When requests also share a question, the reusable prefix extends through their identical question tokens. Prefix reuse requires matching token IDs, image features and multimodal positions. Each suffix receives a separate cache view and its original branch positions; request-local prefix states remain unchanged. Grouping compatible suffixes into a batch reduces repeated backbone calls. The resulting question and candidate representations are regrouped by question before applying Set attention and masked normalization. This execution schedule preserves the scorer's parameters and branch visibility. Prefix length, candidate count, batch shape, and cache memory determine execution cost. Numerical validation compares the resulting logits and decisions with ordinary branch execution under the same precision.
-
-\paragraph{Tree-mask execution.}
-An additional execution path packs the image prefix as a root, question prefixes as internal branches, and query/candidate suffixes as leaves. A token attends to its causal predecessors within its segment and to its ancestors. Question branches and sibling candidate leaves are isolated. Multimodal positions are gathered from the original unshared sequences, and leaf readouts feed the same question-local Set module and pointer. The current implementation uses dense masked attention, whose computation and memory depend on the packed sequence length. Tree packing and prefix-cache batching are alternative execution schedules for the same branch organization.

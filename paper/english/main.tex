@@ -4,14 +4,14 @@
 \usepackage{amsmath,amssymb,booktabs,graphicx,hyperref}
 \hypersetup{hidelinks}
 \setlength{\headheight}{14pt}
-\title{Open-VisualJev: Design and Analysis of a Multimodal Decision Model}
+\title{OpenVisualJev: Design and Analysis of a Multimodal Decision Model}
 \author{Sheng Jin \\ SenseTime Research and Tetras.AI}
 \date{}
 \begin{document}
 \maketitle
 \lhead{Technical report --- work in progress}
 \begin{abstract}
-Multimodal decision models aim to support low-latency decisions by directly mapping visual context and runtime-defined choices to probabilities. Building such models requires a scoring interface that accommodates changing candidate sets and produces reliable decision scores. We present Open-VisualJev, a multimodal decision model built on a vision--language backbone with a dynamic candidate-scoring head. The model combines independent candidate encoding with permutation-equivariant set interaction, enabling joint comparison of the available choices while preserving consistency under candidate reordering. Calibration-aware training and held-out temperature scaling refine the resulting probabilities. Experiments on visual relation tasks, fine-grained recognition, and natural visual question answering show that this design preserves decisions under candidate reordering, learns set-dependent preferences, and remains competitive with a complete-candidate language-model readout on standard tasks. Its advantage becomes more pronounced with larger difficult candidate sets. Component analyses further clarify the contributions of candidate interaction, variable-count training, and probability calibration. These findings support explicit candidate-set modeling as a practical design principle for multimodal decision systems.
+Multimodal decision models aim to support low-latency decisions by directly mapping visual context and runtime-defined choices to probabilities. Building such models requires a scoring interface that accommodates changing candidate sets and produces reliable decision scores. We present OpenVisualJev, a multimodal decision model built on a vision--language backbone with a dynamic candidate-scoring head. Tree-masked attention shares image and question prefixes across isolated candidate branches; permutation-equivariant set interaction then compares the resulting representations and preserves consistency under candidate reordering. Calibration-aware training and held-out temperature scaling refine the resulting probabilities. Experiments on visual relation tasks, fine-grained recognition, and natural visual question answering show that this design preserves decisions under candidate reordering, learns set-dependent preferences, and remains competitive with a complete-candidate language-model readout on standard tasks. Its advantage becomes more pronounced with larger difficult candidate sets. Component analyses further clarify the contributions of candidate interaction, variable-count training, and probability calibration. These findings support explicit candidate-set modeling as a practical design principle for multimodal decision systems.
 \end{abstract}
 \input{introduction}
 \input{method}
