@@ -1,6 +1,6 @@
 # Technical report
 
-**Open-VisualJev: Design and Analysis of a Multimodal Decision Model**
+**OpenVisualJev: Design and Analysis of a Multimodal Decision Model**
 
 Sheng Jin · SenseTime Research and Tetras.AI
 

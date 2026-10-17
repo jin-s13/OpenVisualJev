@@ -1,4 +1,4 @@
-<h1 align="center">Open-VisualJev</h1>
+<h1 align="center">OpenVisualJev</h1>
 <h3 align="center">Design and Analysis of a Multimodal Decision Model</h3>
 <p align="center"><strong>Sheng Jin</strong><br>SenseTime Research and Tetras.AI</p>
 <p align="center">
@@ -9,13 +9,13 @@
 
 ## Overview
 
-**Open-VisualJev** is a multimodal decision model that directly assigns probabilities to runtime-defined choices. Built on **Qwen3-VL-4B**, it combines visual–language representations with a shared dynamic pointer for image recognition and visual question answering.
+**OpenVisualJev** is a multimodal decision model that directly assigns probabilities to runtime-defined choices. Built on **Qwen3-VL-4B**, it combines visual–language representations with a shared dynamic pointer for image recognition and visual question answering.
 
 - **Dynamic choices:** natural-language candidates define the decision space for each question.
 - **Set-aware scoring:** isolated candidate encoding and position-free set interaction support joint comparison and permutation-equivariant scores.
 - **Probability calibration:** calibration-aware training and held-out temperature scaling refine the output probabilities.
 
-![Open-VisualJev architecture: shared context, isolated branches, set interaction and dynamic pointer](paper/figures/set-pointer-method.png)
+![OpenVisualJev architecture: shared context, isolated branches, set interaction and dynamic pointer](paper/figures/set-pointer-method.png)
 
 The figure illustrates tree-mask execution. The paper's main results use ordinary batched branches; tree-mask inference is an [explicit option](docs/tree-inference.md).
 
@@ -84,7 +84,7 @@ The interface accepts an image and one or more questions, each with 2–20 candi
 
 ```bibtex
 @techreport{jin2026openvisualjev,
-  title       = {{Open-VisualJev}: Design and Analysis of a Multimodal Decision Model},
+  title       = {{OpenVisualJev}: Design and Analysis of a Multimodal Decision Model},
   author      = {Jin, Sheng},
   institution = {SenseTime Research and Tetras.AI},
   year        = {2026},
@@ -95,6 +95,6 @@ The interface accepts an image and one or more questions, each with 2–20 candi
 
 ## Acknowledgements and license
 
-This project builds on [Qwen3-VL](https://github.com/QwenLM/Qwen3-VL), PyTorch, Transformers, and PEFT. Its research and writing workflow uses [ai-research-writing-skill](https://github.com/jin-s13/ai-research-writing-skill); the project presentation draws inspiration from [VideoJev](https://github.com/MCG-NJU/VideoJev).
+This project builds on [Qwen3-VL](https://github.com/QwenLM/Qwen3-VL), PyTorch, Transformers, and PEFT. Its research and writing workflow uses [ai-research-writing-skill](https://github.com/jin-s13/ai-research-writing-skill).
 
 Code is released under the [MIT License](LICENSE). Pretrained models, datasets, and third-party assets retain their respective licenses.

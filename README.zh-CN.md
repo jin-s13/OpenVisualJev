@@ -1,4 +1,4 @@
-<h1 align="center">Open-VisualJev</h1>
+<h1 align="center">OpenVisualJev</h1>
 <h3 align="center">多模态决策模型的设计与分析</h3>
 <p align="center"><strong>Sheng Jin</strong><br>SenseTime Research and Tetras.AI</p>
 <p align="center">
@@ -9,13 +9,13 @@
 
 ## 简介
 
-**Open-VisualJev** 面向运行时定义的候选，直接输出多模态决策概率。模型以 **Qwen3-VL-4B** 为基座，将视觉语言表示与共享动态指针结合，用于图像识别和视觉问答。
+**OpenVisualJev** 面向运行时定义的候选，直接输出多模态决策概率。模型以 **Qwen3-VL-4B** 为基座，将视觉语言表示与共享动态指针结合，用于图像识别和视觉问答。
 
 - **动态候选：** 每道题通过自然语言候选定义自己的决策空间。
 - **集合感知评分：** 独立候选编码与无位置集合交互支持联合比较和排列等变评分。
 - **概率校准：** 校准感知训练与独立温度缩放共同调整输出概率。
 
-![Open-VisualJev：共享上下文、隔离分支、集合交互与动态指针](paper/figures/set-pointer-method.png)
+![OpenVisualJev：共享上下文、隔离分支、集合交互与动态指针](paper/figures/set-pointer-method.png)
 
 图中展示 tree-mask 执行方式。论文主结果使用普通批处理分支；tree-mask 推理作为[显式选项](docs/tree-inference.md)提供。
 
@@ -84,7 +84,7 @@ print(answers)
 
 ```bibtex
 @techreport{jin2026openvisualjev,
-  title       = {{Open-VisualJev}: Design and Analysis of a Multimodal Decision Model},
+  title       = {{OpenVisualJev}: Design and Analysis of a Multimodal Decision Model},
   author      = {Jin, Sheng},
   institution = {SenseTime Research and Tetras.AI},
   year        = {2026},
@@ -95,6 +95,6 @@ print(answers)
 
 ## 致谢与许可
 
-本项目基于 [Qwen3-VL](https://github.com/QwenLM/Qwen3-VL)、PyTorch、Transformers 和 PEFT 构建。研究与写作流程使用 [ai-research-writing-skill](https://github.com/jin-s13/ai-research-writing-skill)，项目展示方式参考 [VideoJev](https://github.com/MCG-NJU/VideoJev)。
+本项目基于 [Qwen3-VL](https://github.com/QwenLM/Qwen3-VL)、PyTorch、Transformers 和 PEFT 构建。研究与写作流程使用 [ai-research-writing-skill](https://github.com/jin-s13/ai-research-writing-skill)。
 
 代码采用 [MIT 许可证](LICENSE)。预训练模型、数据集与第三方资产遵循各自的许可。
