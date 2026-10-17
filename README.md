@@ -17,8 +17,6 @@
 
 ![OpenVisualJev architecture: shared context, isolated branches, set interaction and dynamic pointer](paper/figures/set-pointer-method.png)
 
-The figure illustrates tree-mask execution. The paper's main results use ordinary batched branches; tree-mask inference is an [explicit option](docs/tree-inference.md).
-
 ## A paper produced with ai-research-writing-skill
 
 **The entire paper is an output of the [ai-research-writing-skill](https://github.com/jin-s13/ai-research-writing-skill) research and writing workflow.** Under Sheng Jin's direction, AI assistance supported literature review, method and experiment design, implementation, experiment execution and analysis, figure preparation, manuscript drafting, and revision.

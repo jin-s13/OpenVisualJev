@@ -17,8 +17,6 @@
 
 ![OpenVisualJev：共享上下文、隔离分支、集合交互与动态指针](paper/figures/set-pointer-method.png)
 
-图中展示 tree-mask 执行方式。论文主结果使用普通批处理分支；tree-mask 推理作为[显式选项](docs/tree-inference.md)提供。
-
 ## ai-research-writing-skill 的论文产出
 
 **整篇论文是 [ai-research-writing-skill](https://github.com/jin-s13/ai-research-writing-skill) 端到端研究与写作流程的产出。** 在 Sheng Jin 的指导下，AI 辅助工作覆盖文献调研、方法与实验设计、代码实现、实验执行与分析、配图制作，以及论文起草和迭代修改。
