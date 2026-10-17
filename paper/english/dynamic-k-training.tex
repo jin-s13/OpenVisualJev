@@ -1,0 +1,21 @@
+\subsection{Training with variable candidate counts}
+\label{sec:dynamic-k-training}
+We test how exposure to variable candidate counts affects performance on larger decision sets. We train each interface with a candidate count sampled independently and uniformly from $K\in\{2,4,10\}$ for each image and epoch. Image exposure, optimizer updates, backbone and development-selection rule are held fixed; the standard four-choice development set still selects the checkpoint. Candidate-token computation varies with the sampled count. The test candidate sets are identical across all four checkpoints, and twenty candidates remain outside the training support. The category inventory is held fixed while candidate count varies.
+\begin{table}[htbp]
+\centering\small
+\begin{tabular}{lrrrr}
+\toprule
+Test & LM fixed & Set fixed & LM variable & Set variable \\
+\midrule
+Standard & 89.08 & 89.79 & 89.08 & 89.82 \\
+Hard 2 & 92.87 & 93.36 & 92.73 & 93.26 \\
+Hard 4 & 89.25 & 89.93 & 89.13 & 89.91 \\
+Hard 10 & 84.94 & 86.27 & 86.02 & 87.24 \\
+Hard 20 & 82.01 & 84.47 & 84.20 & 85.82 \\
+\bottomrule
+\end{tabular}
+\caption{Equal-dataset accuracy (\%) for fixed four-candidate training and variable-candidate training. All four models use the same single training seed and test records. Difficult-distractor tests and the author-defined standard test are separate constructions.}
+\label{tab:dynamic-k-training}
+\end{table}
+At twenty difficult candidates, the change from fixed to variable training is +2.19 [+1.86, +2.53] percentage points for LM and +1.35 [+1.08, +1.62] for Set (paired image-bootstrap intervals). The corresponding change in the Set--LM gap is -0.85 [-1.25, -0.45] percentage points. These comparisons condition on the selected weights and assess the variable-count training recipe, including its candidate-token computation.
+Both methods improve at larger difficult candidate counts, but LM benefits more at twenty candidates, narrowing the Set--LM gap. Set retains a positive gap of +1.62 [+1.31, +1.93] percentage points after variable-count training. Thus the magnitude of the fixed-count advantage depends partly on training exposure. Standard-test point estimates remain close to their fixed-count counterparts. On the same exhaustive-order subset, the variable-count Set still has no decision changes, whereas the variable-count LM still changes candidate identity. The permutation test distinguishes the order behavior of the two interfaces after variable-count training.

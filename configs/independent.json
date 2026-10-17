@@ -1,0 +1,10 @@
+{
+  "arm": "independent",
+  "epochs": 3,
+  "seed": 20261021,
+  "learning_rate": 0.0002,
+  "weight_decay": 0.01,
+  "accumulation": 8,
+  "max_grad_norm": 1.0,
+  "warmup_ratio": 0.03
+}

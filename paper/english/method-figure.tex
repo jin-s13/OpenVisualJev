@@ -1,0 +1,6 @@
+\begin{figure}[t]
+\centering
+\includegraphics[width=\linewidth]{../figures/set-pointer-method.png}
+\caption{Set Pointer with tree-masked encoding. A packed input shares the image prefix and each question prefix across isolated query and candidate suffixes. Each token attends to its causal predecessors within its branch and to its ancestors. The shared projection is applied independently to each candidate representation; position-free Set attention then compares candidates jointly. The question query bypasses candidate interaction and scores the resulting keys before masked softmax. Each question has its own interaction and normalization. This diagram depicts the tree execution option; the main experiments use ordinary batched branches with the same visibility structure. Training includes dataset-wise mean-confidence regularization, followed by held-out temperature scaling.}
+\label{fig:set-pointer-method}
+\end{figure}

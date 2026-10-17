@@ -1,0 +1,20 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+[project]
+name = "open-visualjev"
+version = "0.1.0.dev0"
+description = "Research implementation of candidate-set visual decisions"
+readme = "README.md"
+license = {file = "LICENSE"}
+authors = [{name = "Sheng Jin"}]
+requires-python = ">=3.10"
+dependencies = ["torch==2.8.0", "Pillow>=10"]
+[project.optional-dependencies]
+vlm = ["transformers==4.57.3", "peft==0.17.1", "torchvision==0.23.0"]
+test = ["pytest>=8"]
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[project.urls]
+Repository = "https://github.com/jin-s13/OpenVisualJev"

@@ -1,0 +1,60 @@
+\section{Decision interface and model structure}
+\input{method-figure}
+For an image $x$, a question $q$, and runtime-supplied candidate texts $C=(c_i)_{i=1}^{K}$, the model returns a normalized distribution over the current candidate slots. External question and candidate identifiers associate outputs with inputs; pointer prompts contain the image, question, and candidate text. This work studies mutually exclusive visual Choice decisions. The output distribution is defined over the supplied candidate set, and a held-out calibration stage adjusts its confidence.
+
+\subsection{Candidate encoding and set-conditioned scoring}
+The scorer first grounds each candidate in the image and question, then compares the resulting representations as a set. This separates the visual interpretation of an alternative from its role among the available choices.
+
+\paragraph{Shared candidate branches.}
+Let $E_\theta$ denote the image--text backbone and its final valid-token representation. We construct a question representation $u=E_\theta(x,q)$ and a candidate representation $h_i=E_\theta(x,q\mathbin{\Vert}\texttt{Candidate:}\mathbin{\Vert}c_i)$ using shared parameters. Each branch is encoded independently of the other candidate texts. The language backbone uses causal attention within each branch. The implementation batches one question branch and one branch per candidate, each with its own token history, multimodal positions, attention mask, and final valid-token readout. Parameters are shared across branches; image encoding is performed within each branch.
+
+\paragraph{Position-free candidate interaction.}
+Writing the candidate representations as rows of $H$, we apply a shared input projection followed by a position-free candidate module $S_\phi$. The Set module uses self-attention over candidate representations, followed by shared per-row transformations. The query representation remains separate from this candidate self-attention stack. Candidate logits and probabilities are
+\begin{equation}
+ Z=S_\phi(H),\qquad s_i=\frac{\langle W_q\operatorname{LN}(u), W_k\operatorname{LN}(Z_i)\rangle}{\sqrt{d}},\qquad p_i=\frac{\exp(s_i)}{\sum_{j\in\mathcal V}\exp(s_j)},
+\end{equation}
+where $d$ is the query--key dimension and $\mathcal V$ contains valid slots. Invalid padded keys are masked during attention and their output logits are excluded from normalization.
+
+
+\subsection{Structural properties}
+\paragraph{Permutation-equivariant scoring.}
+In exact arithmetic, shared row-wise transformations commute with a candidate permutation matrix $P$. Self-attention obeys $\operatorname{Attn}(PH)=P\operatorname{Attn}(H)$ because query, key, and value rows, together with the key mask, are permuted consistently. Residual connections and row-wise normalization preserve this property. Consequently $s(PH)=Ps(H)$ and $p(PH)=Pp(H)$ when branch preprocessing and positions are unchanged and no candidate index is injected.
+
+With a unique largest logit, permutation-equivariant scores preserve the selected candidate identity. For tied maxima, the selected candidate follows the first-slot tie-breaking rule. Floating-point reductions and changed batch shapes can also introduce numerical differences, so the mathematical property is distinct from bitwise reproducibility. Duplicate candidates are a different operation from permutation: adding another slot changes the softmax denominator and can change Set interactions.
+
+\paragraph{Question isolation and candidate-set dependence.}
+Separate questions occupy independent batch rows or separate inference calls. Read-only branch caches and question-local normalization and attention keep each question's scores independent of other questions. Within each question, Set attention conditions every candidate representation on the full candidate set. The relative probability $p_i/p_j=\exp(s_i-s_j)$ therefore depends on set-conditioned logits. Changing the candidate set can change the relative preference between two existing candidates while preserving isolation from other questions.
+
+\subsection{Training and probability calibration}
+Cross-entropy supervises the correct candidate on each example. We complement this supervision with a group-level confidence objective during training and scalar temperature fitting after training.
+
+\paragraph{Calibration-aware training.}
+We train the scorer with cross-entropy and a dataset-wise mean-confidence regularizer, adapting the confidence--accuracy alignment principle of DCA~\citep{liang_2020_dca}. For an effective batch partitioned into dataset groups $B(d)$, let $a_n=\arg\max_i p_{n,i}$, $c_n=\max_i p_{n,i}$, and $r_n=\mathrm{I}[a_n=y_n]$. Let $\mathcal D$ denote the datasets represented in the effective batch. We optimize
+\begin{equation}
+\begin{aligned}
+\mathcal L_{\mathrm{train}}&=\mathcal L_{\mathrm{CE}}+\lambda\mathcal L_{\mathrm{conf}},\\
+\mathcal L_{\mathrm{conf}}&=\frac{1}{|\mathcal D|}\sum_{d\in\mathcal D}
+\left[\frac{1}{|B(d)|}\sum_{n\in B(d)}\left(c_n-\operatorname{stopgrad}(r_n)\right)\right]^2.
+\end{aligned}
+\label{eq:training-objective}
+\end{equation} Each group contributes equally. Balanced effective batches provide observations from every dataset, and the penalty aligns each group's mean confidence with its observed accuracy. Gradients flow through the selected probability; correctness supplies a detached target. The cross-entropy term retains supervision for individual candidate decisions. The training-loss ablation uses the same sampling and optimization settings with the penalty coefficient set to zero.
+
+\paragraph{Reserved probability calibration.}
+After fitting the scorer, we freeze its weights and fit a positive scalar temperature $T$ on a separate calibration split by minimizing candidate-event NLL. Deployment uses $p_i^{(T)}=\exp(s_i/T)/\sum_{j\in\mathcal V}\exp(s_j/T)$. A shared scalar adjusts confidence while preserving score ordering, predicted candidate identity, and permutation equivariance. Temperature fitting uses the held-out task and candidate-count distribution.
+
+\paragraph{Equivalent answer events.}
+For the registered VQA protocol, blank and duplicate candidate strings are preserved. Prediction selects the maximum-logit slot, with first-slot tie breaking, before comparison by literal answer text. For probability scoring, the mass of identical strings is summed. Given a gold answer event $G$, the candidate-conditioned loss is
+\begin{equation}
+ \mathcal L=-\log\sum_{i\in G}p_i
+ =\operatorname{LSE}_{j\in\mathcal V}(s_j)-\operatorname{LSE}_{i\in G}(s_i).
+\end{equation}
+Labels supply supervision to the loss and evaluator; forward prompts contain the image, question, and candidate text. This convention preserves the official answer-text task while keeping slot and answer-event probabilities distinct.
+
+\subsection{Shared execution}
+The branch structure repeats image and question prefixes across candidate encodings. We reuse these common computations while retaining each branch's original token visibility and question-local readout.
+
+\paragraph{Shared-prefix inference.}
+At inference time, the causal branch computation is factored into a shared prefix and independently evaluated suffixes. For multiple questions about the same image, the image-containing prefix is evaluated once and its key--value states are reused by the question and candidate branches. When requests also share a question, the reusable prefix extends through their identical question tokens. Prefix reuse requires matching token IDs, image features and multimodal positions. Each suffix receives a separate cache view and its original branch positions; request-local prefix states remain unchanged. Grouping compatible suffixes into a batch reduces repeated backbone calls. The resulting question and candidate representations are regrouped by question before applying Set attention and masked normalization. This execution schedule preserves the scorer's parameters and branch visibility. Prefix length, candidate count, batch shape, and cache memory determine execution cost. Numerical validation compares the resulting logits and decisions with ordinary branch execution under the same precision.
+
+\paragraph{Tree-mask execution.}
+An additional execution path packs the image prefix as a root, question prefixes as internal branches, and query/candidate suffixes as leaves. A token attends to its causal predecessors within its segment and to its ancestors. Question branches and sibling candidate leaves are isolated. Multimodal positions are gathered from the original unshared sequences, and leaf readouts feed the same question-local Set module and pointer. The current implementation uses dense masked attention, whose computation and memory depend on the packed sequence length. Tree packing and prefix-cache batching are alternative execution schedules for the same branch organization.

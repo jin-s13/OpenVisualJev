@@ -1,0 +1,45 @@
+\section{Results and analysis}
+\subsection{Order stability}
+\label{sec:order-stability}
+We first test whether the scoring interface preserves candidate identity under changes in presentation order. We compare three scoring interfaces, summarized in Table~\ref{tab:structural-properties}. Their inputs, candidate interactions, and readouts are defined as follows.
+
+\textbf{Independent Pointer.} A shared Qwen3-VL encoder processes one image--question query branch and one image--question--candidate branch for each alternative. Each candidate branch receives only the image, question, and its own candidate text. Candidate summaries are projected to width 256 and scored by a shared query--key pointer, with softmax over valid candidates. Relative to Set Pointer, this baseline removes the cross-candidate Transformer blocks. Thus each candidate logit depends only on its own text, the image, and the question; other candidates affect its probability through normalization. Shared branch encoding and scoring yield permutation-equivariant scores.
+
+\textbf{Set Pointer.} The proposed model uses the same branch organization and pointer readout, adding two position-free, pre-norm Transformer blocks over the 256-dimensional candidate representations. Each block uses four attention heads, a fourfold feed-forward expansion, GELU, and zero dropout. The question query bypasses the candidate-interaction stack. Self-attention allows candidate logits to depend on all alternatives, while shared row-wise operations and consistent masking preserve permutation equivariance.
+
+\textbf{Complete-candidate LM.} The baseline encodes the image, question, and all labeled alternatives in a single sequence. Its pretrained LM head supplies the next-token logit for each single-token option label; these logits are normalized over the valid labels to directly obtain candidate probabilities. All candidates therefore share a sequential context, enabling joint comparison. Reordering options changes their positions and label assignments in this context, allowing scores to vary with presentation order. The permutation evaluation maps label predictions back to candidate identities before comparing decisions.
+
+Table~\ref{tab:structural-properties} contrasts the three architectures. The exhaustive permutation measurements below use the unified Set and LM checkpoints; Independent Pointer is additionally evaluated in the relation experiment in Section~4.2.
+
+\begin{table}[htbp]
+\centering\small
+\begin{tabular}{lcc}
+\toprule
+Interface & Candidate interaction & Equivariant scores \\
+\midrule
+Independent Pointer & No & Yes \\
+Set Pointer & Yes & Yes \\
+Complete-candidate LM & Yes & Not guaranteed \\
+\bottomrule
+\end{tabular}
+\caption{Structural properties under the preprocessing and masking conditions in the method. Equivariance is a score property; ties and floating-point effects require separate decision-level checks.}
+\label{tab:structural-properties}
+\end{table}
+For the complete-method checkpoints used in Table~\ref{tab:unified-standard}, LM changes its selected candidate on 108 of 755 questions (14.30\%) across exhaustive permutations; Set changes on none. Each question is evaluated under all 24 candidate orders, yielding 18,120 predictions per model. Predictions are aligned by candidate identity before comparison. Figure~\ref{fig:decision-analysis} connects this order stability to the complete-method performance under larger difficult candidate sets.
+
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=\linewidth]{../figures/decision-analysis.pdf}
+\caption{Complete-method structural analysis. (a) Fraction of questions whose predicted candidate identity changes across all twenty-four orders. (b) Six-dataset mean accuracy on difficult candidate sets. (c) Set-minus-LM accuracy with marginal paired image-cluster bootstrap intervals. All panels use the same complete-method checkpoints as Table~\ref{tab:unified-standard}; the training candidate count is four.}
+\label{fig:decision-analysis}
+\end{figure}
+
+\subsection{Candidate interaction enables preference reversals}
+We next test whether candidate interaction can express preferences that change with the candidate set. In each constructed pair, the middle-sized object among the candidates changes when an extreme candidate is replaced, reversing the required preference between two shared objects. A fixed independent utility assigns the same relative ranking to the shared objects in both questions. Set and complete-candidate LM can condition on the set. The fresh-scene test contains 512 scenes and 2,048 questions, with 1,024 questions and 512 pairs per task; it evaluates the fixed final checkpoints, averaging all three training seeds.
+\input{relation-duration-fresh}
+\input{unified-results}
+
+\subsection{Natural VQA performance}
+Natural VQA tests performance outside fine-grained recognition. Table~\ref{tab:vqa-native-summary} compares the supervised native LM and Set on the same holdout. Set reaches 86.7495\% accuracy versus 87.2800\% for native LM: a mean decrease of 0.5305 percentage points. Thus the observed accuracy remains close to the LM baseline while using the Set decision interface. The exploratory crossed seed/image interval for Set minus LM is $[-1.7041,0.6406]$ percentage points; the interval provides a descriptive estimate of the accuracy difference under the registered protocol. Reserved calibration reduces average probability losses. The calibrated NLL and Brier point estimates remain higher for Set, complementing the accuracy comparison. Raw differences and statistical details appear in Appendix~\ref{app:essential}.
+\input{vqa-native-summary}

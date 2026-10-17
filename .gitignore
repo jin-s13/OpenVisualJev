@@ -1,0 +1,29 @@
+__pycache__/
+*.py[cod]
+.pytest_cache/
+*.egg-info/
+.venv/
+build/
+dist/
+outputs/
+data/
+models/
+checkpoints/
+.DS_Store
+.env
+
+# LaTeX build artifacts
+*.aux
+*.bbl
+*.blg
+*.log
+*.out
+*.synctex.gz
+paper/english/main.pdf
+
+# Private research artifacts
+logs/
+results/
+experiment/
+experiments/
+*.jsonl.gz
