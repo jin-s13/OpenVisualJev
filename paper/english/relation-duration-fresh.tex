@@ -7,11 +7,11 @@ Model & Acc. (\%) & Pairs (\%) & NLL & Acc. (\%) & NLL \\
 \midrule
 Independent & 50.0000 & 0.0000 & 0.70072 & 99.7721 & 0.01175 \\
 Set & 99.0234 & 98.3073 & 0.25971 & 99.5768 & 0.03669 \\
-Complete LM & 99.7721 & 99.5443 & 0.01878 & 99.8372 & 0.01062 \\
+Complete LM & \textbf{99.7721} & \textbf{99.5443} & \textbf{0.01878} & \textbf{99.8372} & \textbf{0.01062} \\
 \bottomrule
 \end{tabular}
 \caption{Fresh-scene test of fixed 80-epoch checkpoints, equally averaging the three retained training seeds. Pairs require both questions correct; all NLL values are uncalibrated. Set and complete-candidate LM both learn the median relation, which requires candidate interaction. The training budget is matched by optimizer updates.}
 \label{tab:relation-duration-fresh}
 \end{table}
 
-Set resolves the median relation. Independent achieves 99.7721\% accuracy on the maximum control and 0.0000\% paired accuracy on preference reversals. The Set-minus-Independent median-pair difference is 98.3073 percentage points, with paired whole-scene interval $[97.4609,99.0234]$. The complete-candidate LM provides a second interaction-capable reference. The experiment demonstrates the role of candidate-dependent computation. The synthetic test reports raw probabilities.
+Set learns the candidate-dependent median relation: its paired accuracy exceeds Independent by 98.3073 percentage points (whole-scene interval $[97.4609,99.0234]$). Independent succeeds on the maximum control, isolating candidate interaction as the relevant distinction.

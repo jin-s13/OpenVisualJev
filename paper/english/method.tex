@@ -44,11 +44,3 @@ We train the scorer with cross-entropy and a dataset-wise mean-confidence regula
 
 \paragraph{Reserved probability calibration.}
 After fitting the scorer, we freeze its weights and fit a positive scalar temperature $T$ on a separate calibration split by minimizing candidate-event NLL. Deployment uses $p_i^{(T)}=\exp(s_i/T)/\sum_{j\in\mathcal V}\exp(s_j/T)$. A shared scalar adjusts confidence while preserving score ordering, predicted candidate identity, and permutation equivariance. Temperature fitting uses the held-out task and candidate-count distribution.
-
-\paragraph{Equivalent answer events.}
-For the registered VQA protocol, blank and duplicate candidate strings are preserved. Prediction selects the maximum-logit slot, with first-slot tie breaking, before comparison by literal answer text. For probability scoring, the mass of identical strings is summed. Given a gold answer event $G$, the candidate-conditioned loss is
-\begin{equation}
- \mathcal L=-\log\sum_{i\in G}p_i
- =\operatorname{LSE}_{j\in\mathcal V}(s_j)-\operatorname{LSE}_{i\in G}(s_i).
-\end{equation}
-Labels supply supervision to the loss and evaluator; forward prompts contain the image, question, and candidate text. This convention preserves the official answer-text task while keeping slot and answer-event probabilities distinct.

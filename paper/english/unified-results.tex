@@ -1,20 +1,20 @@
 \subsection{Standard recognition and candidate-count transfer}
 \label{sec:unified-recognition}
-We evaluate the complete decision model under matched balanced six-dataset training. Both interfaces use cross-entropy plus the dataset-wise calibration loss and a separately fitted temperature. Table~\ref{tab:unified-standard} reports one mixed-dataset model per interface, using the fixed final checkpoint from one shared training seed. Set reaches 90.35\% equal-dataset accuracy versus 90.09\% for LM, a difference of $+0.2690$ percentage points with paired interval $[+0.0086,+0.5317]$.
+Table~\ref{tab:unified-standard} evaluates the complete models after matched balanced six-dataset training and held-out calibration. Set reaches 90.35\% mean accuracy versus 90.09\% for LM, a $+0.2690$-point difference (paired interval $[+0.0086,+0.5317]$).
 \begin{table}[htbp]
 \centering\small
 \begin{tabular}{lrrr}
 \toprule
 Dataset & LM (\%) & Set (\%) & Difference (pp) \\
 \midrule
-Pets & 95.88 & 95.42 & -0.46 \\
-CUB & 84.52 & 85.57 & +1.05 \\
-Cars & 93.74 & 93.83 & +0.09 \\
-Dogs & 85.65 & 85.80 & +0.15 \\
-Flowers & 99.11 & 98.99 & -0.11 \\
-Aircraft & 81.61 & 82.51 & +0.90 \\
+Pets & \textbf{95.88} & 95.42 & -0.46 \\
+CUB & 84.52 & \textbf{85.57} & +1.05 \\
+Cars & 93.74 & \textbf{93.83} & +0.09 \\
+Dogs & 85.65 & \textbf{85.80} & +0.15 \\
+Flowers & \textbf{99.11} & 98.99 & -0.11 \\
+Aircraft & 81.61 & \textbf{82.51} & +0.90 \\
 \midrule
-Equal-dataset mean & 90.09 & 90.35 & +0.27 \\
+Equal-dataset mean & 90.09 & \textbf{90.35} & +0.27 \\
 \bottomrule
 \end{tabular}
 \caption{Unified mixed-dataset models on author-defined four-choice test records, using the same shuffled candidate sets for both methods. Each method uses one balanced CE-plus-calibration checkpoint across all six datasets, followed by its own held-out temperature. One training seed; differences are Set minus LM, computed before rounding.}
@@ -22,17 +22,17 @@ Equal-dataset mean & 90.09 & 90.35 & +0.27 \\
 \end{table}
 
 \paragraph{Transfer to larger difficult candidate sets.}
-We evaluate these same complete-method checkpoints at candidate counts of two, four, ten, and twenty, keeping the class inventory fixed. Distractors are selected by the recorded image--text ranking. Table~\ref{tab:full-method-hard} reports equal-dataset accuracy. The Set--LM gap is +0.44 percentage points at four candidates (paired 95\% interval $[+0.17,+0.70]$) and +1.80 points at twenty candidates ($[+1.42,+2.20]$). The larger difficult sets therefore expose a stronger accuracy advantage for Set within this evaluation, while the model is trained with four candidates.
+Using the same checkpoints, we increase candidate counts with distractors selected by a fixed image--text ranking (Table~\ref{tab:full-method-hard}). The Set--LM gap grows from 0.44 points at four choices to 1.80 at twenty (paired intervals $[0.17,0.70]$ and $[1.42,2.20]$). Larger difficult sets expose the benefit of joint comparison.
 \begin{table}[htbp]
 \centering\small
 \begin{tabular}{rrrr}
 \toprule
 Candidates & LM (\%) & Set (\%) & Difference (pp) \\
 \midrule
-2 & 93.47 & 93.85 & +0.38 \\
-4 & 90.10 & 90.54 & +0.44 \\
-10 & 84.62 & 86.00 & +1.38 \\
-20 & 80.26 & 82.06 & +1.80 \\
+2 & 93.47 & \textbf{93.85} & +0.38 \\
+4 & 90.10 & \textbf{90.54} & +0.44 \\
+10 & 84.62 & \textbf{86.00} & +1.38 \\
+20 & 80.26 & \textbf{82.06} & +1.80 \\
 \bottomrule
 \end{tabular}
 \caption{Difficult-candidate count transfer of the complete-method checkpoints in Table~\ref{tab:unified-standard}. Training uses four candidates; test candidates are mined with the fixed image--text ranking. Values are six-dataset mean accuracies from one shared training seed. Differences are Set minus LM.}
@@ -42,7 +42,7 @@ Candidates & LM (\%) & Set (\%) & Difference (pp) \\
 \input{dynamic-k-training}
 
 \subsection{Training and post-training calibration}
-Table~\ref{tab:unified-probability} evaluates the probability outputs of the complete-method checkpoints. Independently fitted temperatures reduce NLL and Brier for both interfaces while preserving their decisions. After calibration, Set has NLL 0.2831 versus 0.2778 for LM; the paired Set-minus-LM difference is $+0.00530$ with interval $[+0.00004,+0.01054]$. Set has a lower Brier point estimate, 0.1428 versus 0.1438, with difference $-0.00105$ and interval $[-0.00356,+0.00148]$. Figure~\ref{fig:calibration-analysis} visualizes how temperature scaling changes the confidence--accuracy relationship within each dataset.
+Temperature scaling improves NLL and Brier for both models without changing accuracy (Table~\ref{tab:unified-probability}). After scaling, LM has lower NLL and Set has a lower Brier point estimate; the paired Brier difference interval includes zero. Per-dataset calibration curves appear in Appendix Figure~\ref{fig:calibration-analysis}.
 \begin{table}[htbp]
 \centering\small
 \begin{tabular}{lrrrr}
@@ -51,37 +51,32 @@ Table~\ref{tab:unified-probability} evaluates the probability outputs of the com
 \cmidrule(lr){2-3}\cmidrule(lr){4-5}
 Metric $\downarrow$ & LM & Set & LM & Set \\
 \midrule
-NLL & 0.3008 & 0.3478 & 0.2778 & 0.2831 \\
-Sum-Brier & 0.1473 & 0.1480 & 0.1438 & 0.1428 \\
-ECE & 0.0337 & 0.0448 & 0.0224 & 0.0355 \\
+NLL & 0.3008 & 0.3478 & \textbf{0.2778} & 0.2831 \\
+Sum-Brier & 0.1473 & 0.1480 & 0.1438 & \textbf{0.1428} \\
+ECE & 0.0337 & 0.0448 & \textbf{0.0224} & 0.0355 \\
 \bottomrule
 \end{tabular}
-\caption{Equal-dataset mean probability metrics for the balanced CE-plus-calibration checkpoints in Table~\ref{tab:unified-standard}. ECE uses fifteen equal-count bins and is descriptive. Lower is better. Calibration uses post-training temperature scaling.}
+\caption{Equal-dataset mean probability metrics for the balanced CE-plus-calibration checkpoints in Table~\ref{tab:unified-standard}. ECE uses fifteen equal-count bins and is descriptive. Lower is better; bold marks the lowest value in each row.}
 \label{tab:unified-probability}
 \end{table}
 
 
-\begin{figure}[htbp]
-\centering
-\includegraphics[width=\linewidth]{../figures/calibration-analysis.pdf}
-\caption{Probability calibration of the complete Set model on the six recognition datasets. Each curve uses fifteen equal-count confidence bins; points show mean top-choice confidence and observed accuracy. The dashed diagonal denotes matched confidence and accuracy. Temperature scaling uses the single scalar fitted on the reserved calibration data, with unchanged predictions.}
-\label{fig:calibration-analysis}
-\end{figure}
+
 
 \paragraph{Training-time calibration.}
-We further compare cross-entropy training with a dataset-wise mean-confidence penalty under a matched, balanced six-dataset training recipe. Both Set models use the same seed, candidate exposures, and final-epoch checkpoint. Table~\ref{tab:training-calibration} shows that the penalty improves raw NLL, Brier, and ECE while changing macro accuracy from 90.48\% to 90.35\%. Fitting a separate temperature for each model by minimizing equal-dataset calibration NLL further improves probability quality: NLL decreases from 0.2985 to 0.2831 and Brier from 0.1457 to 0.1428 when the training penalty is added. The paired NLL difference is $-0.01539$ with interval $[-0.01953,-0.01142]$; the accuracy difference is $-0.1273$ percentage points with interval $[-0.3205,+0.0676]$. These results support combining the training penalty with post-training temperature scaling. Appendix~\ref{sec:training-calibration-protocol} specifies the matched training recipe.
+Under the same balanced recipe, the training penalty improves raw NLL, Brier, and ECE (Table~\ref{tab:training-calibration}). Combining it with temperature scaling further reduces NLL and Brier relative to temperature-scaled CE training. The NLL difference is $-0.01539$ (paired interval $[-0.01953,-0.01142]$), with a small accuracy change of $-0.1273$ points. Appendix~\ref{sec:training-calibration-protocol} gives the recipe.
 \begin{table}[htbp]
 \centering\small
 \begin{tabular}{llrrrr}
 \toprule
 Training & Probability & Accuracy (\%) & NLL $\downarrow$ & Brier $\downarrow$ & ECE $\downarrow$ \\
 \midrule
-CE & Raw & 90.48 & 0.4003 & 0.1519 & 0.0521 \\
+CE & Raw & \textbf{90.48} & 0.4003 & 0.1519 & 0.0521 \\
 CE + calibration & Raw & 90.35 & 0.3478 & 0.1480 & 0.0448 \\
-CE & Temperature & 90.48 & 0.2985 & 0.1457 & 0.0427 \\
-CE + calibration & Temperature & 90.35 & 0.2831 & 0.1428 & 0.0355 \\
+CE & Temperature & \textbf{90.48} & 0.2985 & 0.1457 & 0.0427 \\
+CE + calibration & Temperature & 90.35 & \textbf{0.2831} & \textbf{0.1428} & \textbf{0.0355} \\
 \bottomrule
 \end{tabular}
-\caption{Training-loss comparison for Set under balanced six-dataset training with one shared seed. Metrics are equal-dataset means on the standard test; Brier is summed over candidates and ECE uses fifteen equal-count bins. Each model receives its own held-out temperature fitted with an equal-dataset NLL objective. Positive scalar temperature scaling preserves accuracy.}
+\caption{Training-loss comparison for Set under balanced six-dataset training with one shared seed. Metrics are equal-dataset means on the standard test; Brier is summed over candidates and ECE uses fifteen equal-count bins. Each model receives its own held-out temperature fitted with an equal-dataset NLL objective. Bold marks the best value in each metric column, including ties.}
 \label{tab:training-calibration}
 \end{table}
