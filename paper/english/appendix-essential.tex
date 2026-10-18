@@ -40,18 +40,12 @@ For the registered VQA protocol, blank and duplicate candidate strings are prese
 \end{equation}
 Labels supply supervision to the loss and evaluator; forward prompts contain the image, question, and candidate text. This convention preserves the official answer-text task while keeping slot and answer-event probabilities distinct.
 
-
-
-
-
-
 \subsection{Supplementary evaluation details}
 \paragraph{Candidate-count study.}
 The variable-count training ablation uses a separate unified CE recipe: three epochs with matched image exposure, alternating difficult and random distractors, and development selection by equal-dataset accuracy with earlier-epoch tie-breaking. Fixed-count training uses four candidates; variable-count training samples uniformly from $K\in\{2,4,10\}$. The reported count-transfer tests use difficult distractors at two, four, ten, and twenty candidates alongside the standard records. The four checkpoints share the training seed and test manifests. This study matches image exposure and updates; candidate-token computation varies with candidate count. Twenty-candidate testing measures transfer beyond the training count range.
 
 \paragraph{Order and relation tests.}
 The order test evaluates all 24 permutations of four candidates on 755 class-stratified questions, aligning candidate identities before comparison. Both this test and the difficult-candidate count-transfer evaluation use the complete-method checkpoints from Table~\ref{tab:unified-standard}, with unchanged weights and inference precision. Relation tests use synthetic scenes with paired candidate sets that reverse the required preference between shared objects. Independent, Set, and complete-candidate LM are evaluated with three training seeds at the same fixed final training endpoint on fresh scenes. The paired metric requires both questions correct; a largest-object control tests ordinary independent ranking.
-
 
 \paragraph{Probability quality and uncertainty.}
 Each model receives its own scalar temperature fitted only on reserved calibration data~\citep{guo_2017_calibration}. We report accuracy, NLL, sum-Brier, and ECE, distinguishing raw and scaled probabilities. Recognition ECE uses fifteen equal-count bins; the VQA protocol uses equal-width bins over literal answer events. Recognition intervals use 10,000 paired image-cluster bootstrap replicates within datasets and equal dataset weighting; repeated image rows stay together. They condition on the selected weights and fitted temperatures, excluding training-seed and calibration-fit uncertainty. Relation intervals resample whole scenes; the VQA interval additionally resamples the few available seeds and is exploratory. Intervals are marginal, without multiplicity correction. Further protocol details appear in Appendix~\ref{app:essential}.

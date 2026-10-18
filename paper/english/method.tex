@@ -3,32 +3,31 @@
 Given an image $x$, a question $q$, and runtime candidate texts $C=(c_i)_{i=1}^{K}$, OpenVisualJev returns a normalized distribution over mutually exclusive candidate slots. External identifiers associate outputs with inputs; prompts contain image, question, and candidate content.
 
 \subsection{Tree-masked multimodal encoding}
-We organize the input as a tree with a shared image prefix, a question prefix for each decision, and separate query and candidate suffixes. Common prefixes appear once in the packed sequence. A tree attention mask gives each token access to its causal predecessors within its segment and to all tokens on its ancestor path. Sibling candidate suffixes and distinct question branches are isolated. This organization shares visual and question context while preserving candidate-specific representations.
+The input tree contains a shared image prefix, one prefix per question, and separate query and candidate suffixes. Each prefix appears once. Tokens attend to causal predecessors within their segment and to ancestors; sibling candidates and different questions remain isolated.
 
 \paragraph{Branch representations.}
-Let $E_\theta$ denote the image--text backbone and its final valid-token representation along a root-to-leaf path. The query leaf yields $u=E_\theta(x,q)$, and candidate leaf $i$ yields $h_i=E_\theta(x,q\mathbin{\Vert}\texttt{Candidate:}\mathbin{\Vert}c_i)$. These expressions identify the context visible to each leaf. A packed backbone forward computes all leaf representations using shared parameters. Visual features are injected at the shared image prefix. Each token retains its original branch-local multimodal position, so moving a candidate within the packed input preserves its positional coordinates and visible context.
+Let $E_\theta$ return the final valid-token representation along a root-to-leaf path. The query yields $u=E_\theta(x,q)$, and candidate $i$ yields $h_i=E_\theta(x,q\mathbin{\Vert}\texttt{Candidate:}\mathbin{\Vert}c_i)$. One packed forward computes all leaves, injecting visual features at the shared root. Original branch-local multimodal positions preserve each candidate's coordinates and visible context under reordering.
 
 \subsection{Set interaction and dynamic pointer}
 \paragraph{Position-free candidate interaction.}
-Writing the candidate representations as rows of $H$, we apply a shared input projection followed by a position-free candidate module $S_\phi$. The Set module uses self-attention over candidate representations, followed by shared per-row transformations. The query representation remains separate from this candidate self-attention stack. Candidate logits and probabilities are
+Stacking candidate representations as rows of $H$, we apply a shared projection and position-free self-attention module $S_\phi$. The query bypasses this module. Scores and probabilities are
 \begin{equation}
  Z=S_\phi(H),\qquad s_i=\frac{\langle W_q\operatorname{LN}(u), W_k\operatorname{LN}(Z_i)\rangle}{\sqrt{d}},\qquad p_i=\frac{\exp(s_i)}{\sum_{j\in\mathcal V}\exp(s_j)},
 \end{equation}
-where $d$ is the query--key dimension and $\mathcal V$ contains valid slots. Invalid padded keys are masked during attention and their output logits are excluded from normalization.
-
+where $d$ is the query--key dimension and $\mathcal V$ indexes valid slots. Padding is excluded from attention and probability normalization.
 
 \subsection{Structural properties}
 \paragraph{Permutation-equivariant scoring.}
-In exact arithmetic, shared row-wise transformations commute with a candidate permutation matrix $P$. Self-attention obeys $\operatorname{Attn}(PH)=P\operatorname{Attn}(H)$ because query, key, and value rows, together with the key mask, are permuted consistently. Residual connections and row-wise normalization preserve this property. Consequently $s(PH)=Ps(H)$ and $p(PH)=Pp(H)$ when branch preprocessing and positions are unchanged and no candidate index is injected.
+Shared row-wise operations commute with a candidate permutation $P$. Consistently permuting query, key, value, and mask gives $\operatorname{Attn}(PH)=P\operatorname{Attn}(H)$; residuals and row-wise normalization preserve this relation. Thus $s(PH)=Ps(H)$ and $p(PH)=Pp(H)$ in exact arithmetic, provided branch preprocessing and positions are unchanged and candidate indices are omitted.
 
 With a unique maximum, the selected candidate identity is preserved under candidate reordering.
 
 \paragraph{Question isolation and candidate-set dependence.}
-The tree mask isolates distinct question branches, while Set attention and probability normalization operate within each question. These two levels of isolation keep each question's scores independent of other questions sharing the image prefix. Within each question, Set attention conditions every candidate representation on the full candidate set. The relative probability $p_i/p_j=\exp(s_i-s_j)$ therefore depends on set-conditioned logits. Changing the candidate set can change the relative preference between two existing candidates while preserving isolation from other questions.
+Tree masking isolates questions, and Set attention and normalization operate within each question. Within a question, logits depend on all candidates, so $p_i/p_j=\exp(s_i-s_j)$ can change when the candidate set changes.
 
 \subsection{Training and probability calibration}
 \paragraph{Calibration-aware training.}
-We train the scorer with cross-entropy and a dataset-wise mean-confidence regularizer, adapting the confidence--accuracy alignment principle of DCA~\citep{liang_2020_dca}. For an effective batch partitioned into dataset groups $B(d)$, let $a_n=\arg\max_i p_{n,i}$, $c_n=\max_i p_{n,i}$, and $r_n=\mathrm{I}[a_n=y_n]$. Let $\mathcal D$ denote the datasets represented in the effective batch. We optimize
+We augment cross-entropy with dataset-wise confidence--accuracy alignment, following DCA~\citep{liang_2020_dca}. For dataset groups $B(d)$ in an effective batch, define $a_n=\arg\max_i p_{n,i}$, confidence $c_n=\max_i p_{n,i}$, and correctness $r_n=\mathrm{I}[a_n=y_n]$. Over represented datasets $\mathcal D$, we optimize
 \begin{equation}
 \begin{aligned}
 \mathcal L_{\mathrm{train}}&=\mathcal L_{\mathrm{CE}}+\lambda\mathcal L_{\mathrm{conf}},\\
@@ -36,7 +35,7 @@ We train the scorer with cross-entropy and a dataset-wise mean-confidence regula
 \left[\frac{1}{|B(d)|}\sum_{n\in B(d)}\left(c_n-\operatorname{stopgrad}(r_n)\right)\right]^2.
 \end{aligned}
 \label{eq:training-objective}
-\end{equation} Each group contributes equally. Balanced effective batches provide observations from every dataset, and the penalty aligns each group's mean confidence with its observed accuracy. Gradients flow through the selected probability; correctness supplies a detached target. The cross-entropy term retains supervision for individual candidate decisions. The training-loss ablation uses the same sampling and optimization settings with the penalty coefficient set to zero.
+\end{equation} Balanced batches weight datasets equally. Gradients flow through confidence while correctness is detached. The loss ablation sets $\lambda=0$ under matched sampling and optimization.
 
 \paragraph{Reserved probability calibration.}
-After fitting the scorer, we freeze its weights and fit a positive scalar temperature $T$ on a separate calibration split by minimizing candidate-event NLL. Deployment uses $p_i^{(T)}=\exp(s_i/T)/\sum_{j\in\mathcal V}\exp(s_j/T)$. A shared scalar adjusts confidence while preserving score ordering, predicted candidate identity, and permutation equivariance. Temperature fitting uses the held-out task and candidate-count distribution.
+With model weights frozen, we fit $T>0$ on reserved calibration data by minimizing candidate-event NLL. Predictions use $p_i^{(T)}=\exp(s_i/T)/\sum_{j\in\mathcal V}\exp(s_j/T)$. Scalar scaling preserves ranking, candidate identity, and permutation equivariance.

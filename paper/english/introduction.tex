@@ -1,15 +1,15 @@
 \section{Introduction}
-Vision--language models provide a general-purpose foundation for interpreting visual observations through natural-language instructions. Decision pipelines additionally require low-latency judgments over alternatives specified at runtime. The emerging System One paradigm addresses this requirement through direct probabilistic prediction, with visual decision models extending the interface to image-conditioned tasks~\citep{yu_2026_visualjev,zhou_2026_pixeljev}.
+Vision--language models support general-purpose visual understanding, while decision pipelines require low-latency judgments over runtime-defined alternatives. The System One paradigm addresses this requirement through direct probabilistic prediction, extending naturally to image-conditioned decisions~\citep{yu_2026_visualjev,zhou_2026_pixeljev}.
 
-Runtime candidate sets introduce two structural requirements: scores should follow candidate identity under reordering, while relative preferences may depend on the available alternatives. Shared candidate encoding supports the former; joint comparison supplies the latter. Set representation learning offers a principled way to combine these properties~\citep{zaheer_2017_deepsets,lee_2019_set}.
+Candidate scoring must accommodate both order symmetry and set dependence: reordering should preserve candidate identity, while changing the alternatives may change relative preferences. Shared encoding and joint comparison combine these properties through set representations~\citep{zaheer_2017_deepsets,lee_2019_set}.
 
-We present OpenVisualJev\footnote{An independently developed research implementation of a Jev-style multimodal decision model.}, a multimodal decision model built on a vision--language backbone with a dynamic candidate-scoring head. The architecture separates visual grounding of individual candidates from comparison within the current set. Tree-masked attention packs shared image and question prefixes with isolated candidate suffixes into one backbone forward. A position-free set module compares the resulting candidate representations, and a shared pointer maps them to a probability distribution over the supplied choices. Calibration-aware training and held-out temperature scaling complete the pipeline (Figure~\ref{fig:set-pointer-method}).
+We present OpenVisualJev\footnote{An independently developed research implementation of a Jev-style multimodal decision model.}, which separates candidate grounding from joint comparison. Tree-masked attention shares image and question prefixes across isolated candidate branches in one forward pass. A position-free set module compares their representations, and a shared pointer produces candidate probabilities. Calibration-aware training and held-out temperature scaling complete the model (Figure~\ref{fig:set-pointer-method}).
 
-We evaluate order stability and set-dependent preferences through controlled tests, then assess standard recognition and VQA capability on the same Qwen3-VL backbone. The results connect candidate-set structure to stable decisions, stronger recognition with larger difficult candidate sets, and calibrated probability outputs.
+Controlled order and relation tests examine the architecture's structural properties; unified recognition and natural VQA assess task performance. Ablations isolate candidate interaction, training with variable candidate counts, and calibration.
 
 Our contributions are threefold:
 \begin{itemize}
-\item We develop a multimodal decision model that combines pretrained visual--language representations with dynamic candidate scoring and an explicit probability-calibration pipeline.
-\item We formulate a candidate-scoring architecture that combines permutation-equivariant set interaction with shared pointer readout, and analyze its order stability and capacity for set-dependent preferences.
-\item We evaluate these properties through controlled structural tests, unified fine-grained recognition, and natural VQA, with ablations that characterize candidate interaction, candidate-count training, and probability calibration.
+\item A multimodal decision model combining pretrained visual representations, dynamic candidate scoring, and probability calibration.
+\item A permutation-equivariant scoring architecture with joint candidate comparison, together with an analysis of its structural properties.
+\item Controlled structural tests, recognition and VQA evaluations, and ablations of interaction, candidate-count training, and calibration.
 \end{itemize}

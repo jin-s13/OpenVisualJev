@@ -11,7 +11,7 @@
 \maketitle
 \lhead{Technical report --- work in progress}
 \begin{abstract}
-Multimodal decision models aim to support low-latency decisions by directly mapping visual context and runtime-defined choices to probabilities. Building such models requires a scoring interface that accommodates changing candidate sets and produces reliable decision scores. We present OpenVisualJev, a multimodal decision model built on a vision--language backbone with a dynamic candidate-scoring head. Tree-masked attention shares image and question prefixes across isolated candidate branches; permutation-equivariant set interaction then compares the resulting representations and preserves consistency under candidate reordering. Calibration-aware training and held-out temperature scaling refine the resulting probabilities. Experiments on visual relation tasks, fine-grained recognition, and natural visual question answering show that this design preserves decisions under candidate reordering, learns set-dependent preferences, and remains competitive with a complete-candidate language-model readout on standard tasks. Its advantage becomes more pronounced with larger difficult candidate sets. Component analyses further clarify the contributions of candidate interaction, variable-count training, and probability calibration. These findings support explicit candidate-set modeling as a practical design principle for multimodal decision systems. Code is publicly available at \url{https://github.com/jin-s13/OpenVisualJev}.
+Multimodal decision models support low-latency decisions by mapping visual context and runtime-defined choices directly to probabilities. We present OpenVisualJev, a vision--language model with tree-masked candidate encoding, permutation-equivariant set interaction, and a dynamic pointer head. Shared image and question prefixes provide context for isolated candidate branches; joint comparison then produces set-dependent scores that remain consistent under candidate reordering. Calibration-aware training and held-out temperature scaling refine these probabilities. Experiments on visual relations, fine-grained recognition, and natural VQA demonstrate order stability, candidate-dependent comparison, and competitive standard-task performance, with larger gains on difficult candidate sets. Ablations identify the contributions of candidate interaction, variable-count training, and calibration. Code is available at \url{https://github.com/jin-s13/OpenVisualJev}.
 \end{abstract}
 \input{introduction}
 \input{method}
@@ -20,7 +20,6 @@ Multimodal decision models aim to support low-latency decisions by directly mapp
 \input{related}
 \input{conclusion}
 \label{main-text-end}
-\clearpage
 \bibliographystyle{iclr2027_conference}
 \bibliography{references}
 \input{ai-disclosure}

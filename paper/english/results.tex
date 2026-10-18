@@ -1,9 +1,9 @@
 \section{Results and analysis}
 \subsection{Order stability}
 \label{sec:order-stability}
-We first test whether the scoring interface preserves candidate identity under changes in presentation order. We compare three scoring interfaces, summarized in Table~\ref{tab:structural-properties}. Their inputs, candidate interactions, and readouts are defined as follows.
+We compare three interfaces to test candidate-order stability (Table~\ref{tab:structural-properties}).
 
-\textbf{Independent Pointer} removes the candidate-interaction blocks and scores each independently encoded candidate using a shared 256-dimensional query--key pointer. \textbf{Set Pointer} adds two position-free Transformer blocks (four heads, fourfold feed-forward expansion, GELU, zero dropout), with the query bypassing candidate interaction. \textbf{Complete-candidate LM} encodes all labeled alternatives together and normalizes next-token logits over their single-token labels. All interfaces directly output candidate probabilities; Table~\ref{tab:structural-properties} summarizes their structural properties.
+\textbf{Independent Pointer} scores isolated candidate representations with a shared 256-dimensional query--key pointer. \textbf{Set Pointer} adds two position-free Transformer blocks (four heads, fourfold feed-forward expansion, GELU, zero dropout); the query bypasses interaction. \textbf{Complete-candidate LM} jointly encodes labeled alternatives and normalizes next-token logits over their single-token labels. All directly output candidate probabilities.
 
 \begin{table}[htbp]
 \centering\small
@@ -19,10 +19,7 @@ Complete-candidate LM & Yes & Not guaranteed \\
 \caption{Structural properties under the preprocessing and masking conditions in the method. Equivariance is a score property; ties and floating-point effects require separate decision-level checks.}
 \label{tab:structural-properties}
 \end{table}
-For the complete-method checkpoints used in Table~\ref{tab:unified-standard}, LM changes its selected candidate on 108 of 755 questions (14.30\%) across exhaustive permutations; Set changes on none. Each question is evaluated under all 24 candidate orders, yielding 18,120 predictions per model. Predictions are aligned by candidate identity before comparison. Figure~\ref{fig:decision-analysis} connects this order stability to the complete-method performance under larger difficult candidate sets.
-
-
-
+On 755 questions, we evaluate all 24 candidate permutations and align predictions by candidate identity. LM changes its answer on 108 questions (14.30\%); Set changes on none. Figure~\ref{fig:decision-analysis} summarizes order stability and difficult-candidate transfer for the complete-method checkpoints.
 
 \begin{figure}[htbp]
 \centering
@@ -32,9 +29,9 @@ For the complete-method checkpoints used in Table~\ref{tab:unified-standard}, LM
 \end{figure}
 
 \subsection{Candidate interaction enables preference reversals}
-Paired three-choice questions share two objects but replace the third with a smaller or larger extreme, reversing the correct median. Candidate-independent utilities cannot reverse the shared objects' ranking. We test fixed checkpoints on 512 fresh scenes (2,048 questions), averaging three training seeds; a largest-object task controls for ordinary ranking.
+Paired three-choice questions replace an extreme object while retaining two shared objects, reversing their correct median ranking. We evaluate fixed checkpoints on 512 fresh scenes (2,048 questions), averaging three seeds; a maximum-object control tests ordinary ranking.
 \input{relation-duration-fresh}
 \input{unified-results}
 
 \subsection{Natural VQA performance}
-On A-OKVQA, Set remains close to the native LM, with an accuracy decrease of 0.53 points across three seeds (Appendix Table~\ref{tab:vqa-native-summary}; exploratory interval $[-1.7041,0.6406]$). Scaled probability losses favor LM. This test evaluates retention of general VQA capability; split and uncertainty details are in Appendix~\ref{app:essential}.
+Set retains comparable VQA accuracy: the three-seed mean decreases by 0.53 points relative to native LM (exploratory interval $[-1.7041,0.6406]$). Scaled probability losses favor LM; Appendix Table~\ref{tab:vqa-native-summary} reports the results.

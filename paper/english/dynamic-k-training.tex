@@ -1,6 +1,6 @@
 \subsection{Training with variable candidate counts}
 \label{sec:dynamic-k-training}
-We compare fixed four-choice training with counts sampled uniformly from $K\in\{2,4,10\}$, holding image exposure, updates, development selection, and test candidates fixed. Candidate-token computation varies with the sampled count; twenty-choice tests exceed the training range.
+Fixed four-choice and variable-$K$ training ($K\in\{2,4,10\}$, uniformly sampled) share image exposure, updates, development selection, and test sets. Candidate-token computation varies; twenty-choice tests exceed the training range.
 \begin{table}[htbp]
 \centering\small
 \begin{tabular}{lrrrr}
@@ -17,4 +17,4 @@ Hard 20 & 82.01 & 84.47 & 84.20 & \textbf{85.82} \\
 \caption{Equal-dataset accuracy (\%) for fixed four-candidate training and variable-candidate training. All four models use the same single training seed and test records. Difficult-distractor tests and the author-defined standard test are separate constructions.}
 \label{tab:dynamic-k-training}
 \end{table}
-Variable-count training improves twenty-choice accuracy by 2.19 percentage points for LM and 1.35 for Set. Set retains a 1.62-point advantage (paired interval $[1.31,1.93]$), while standard accuracy changes little. The variable-count Set also preserves every decision in the exhaustive-order test.
+Variable-$K$ training improves twenty-choice accuracy by 2.19 points for LM and 1.35 for Set. Set retains a 1.62-point lead (paired interval $[1.31,1.93]$) and perfect tested order stability; standard accuracy changes little.
