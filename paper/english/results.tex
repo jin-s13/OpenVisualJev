@@ -30,8 +30,10 @@ On 755 questions, we evaluate all 24 candidate permutations and align prediction
 
 \subsection{Candidate interaction enables preference reversals}
 Paired three-choice questions replace an extreme object while retaining two shared objects, reversing their correct median ranking. We evaluate fixed checkpoints on 512 fresh scenes (2,048 questions), averaging three seeds; a maximum-object control tests ordinary ranking.
+Training updates language LoRA and the trainable pointer head using choice-label supervision. The original training inventory has 256 scenes; the final test uses fresh scenes to evaluate the fixed training endpoint. Seeds are 20261011, 20261012, and 20261013. The common fixed endpoint is 80 epochs, using AdamW learning rate 0.0003, accumulation over 64 questions, weight decay 0.01, and clipping at norm one. This longer-budget test followed earlier development diagnostics; it evaluates the final achievable capability under this recipe. All final seeds are retained.
 \input{relation-duration-fresh}
 \input{unified-results}
 
 \subsection{Natural VQA performance}
-Set retains comparable VQA accuracy: the three-seed mean decreases by 0.53 points relative to native LM (exploratory interval $[-1.7041,0.6406]$). Scaled probability losses favor LM; Appendix Table~\ref{tab:vqa-native-summary} reports the results.
+Set retains comparable VQA accuracy: the three-seed mean decreases by 0.53 points relative to native LM (exploratory interval $[-1.7041,0.6406]$). Scaled probability losses favor LM; Table~\ref{tab:vqa-native-summary} reports the results.
+\input{vqa-native-summary}

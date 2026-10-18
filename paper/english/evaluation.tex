@@ -3,6 +3,9 @@ All methods use Qwen3-VL-4B-Instruct~\citep{bai_2025_qwen3vl}, frozen vision par
 
 The reported accuracy and probability tables were evaluated with ordinary batched branches using the same branch visibility and positional coordinates described in the method.
 
+\paragraph{Architecture and scoring.}
+The backbone hidden width is 2560. Candidate summaries are projected to width 256; Set uses two pre-normalized position-free Transformer blocks, four attention heads, feed-forward expansion four, GELU, and zero dropout. Independent removes cross-candidate blocks. The separate question query bypasses candidate attention. The readout operates in single precision over bfloat16 backbone features. The LM scores the next-token logits of single-token candidate symbols, directly normalized over the supplied alternatives. Pointer branches omit candidate indices. Pointer uses separate candidate contexts, while LM uses one complete-candidate context.
+
 \paragraph{Unified recognition.}
 One checkpoint per method covers Pets~\citep{parkhi_2012_pets}, CUB, Cars~\citep{krause_2013_cars}, Dogs, Flowers~\citep{nilsback_2008_flowers}, and Aircraft~\citep{maji_2013_aircraft}. Training, development, and calibration contain 31,088, 3,637, and 3,635 images. Testing uses 35,566 FOCI-style four-choice records~\citep{geigle_2024_foci} released with Finedefics~\citep{he_2025_finedefics}, preserving its repeated Dogs row and shuffling candidates identically across methods.
 
@@ -10,10 +13,16 @@ One checkpoint per method covers Pets~\citep{parkhi_2012_pets}, CUB, Cars~\citep
 Development and calibration images are reserved from official training-side data, using the official validation images for Flowers and Aircraft. Exact and reviewed near-duplicate image groups are separated from the test inventory, with cross-dataset exclusions before mixed training. The six datasets contain 37, 200, 196, 120, 102, and 100 classes, respectively. Each classification record supplies a smaller candidate set containing the gold class. Standard testing preserves the released Finedefics candidates. For difficult-candidate transfer, incorrect classes are selected by a fixed OpenCLIP ViT-L-14 image--text ranking, so each model receives the same distractors at each candidate count.
 
 \paragraph{Main model and component ablation.}
-The complete models use balanced hard-four-choice training: 96 questions per effective batch, 16 per dataset, seed 20261021, and the epoch-three checkpoint after 2,016 updates. Both receive identical candidate exposures, calibration-loss weight five, and separately fitted temperatures minimizing equal-dataset calibration NLL. Table~\ref{tab:training-calibration} ablates the training penalty and temperature under this recipe; Appendix~\ref{sec:training-calibration-protocol} gives details.
+The complete models use balanced hard-four-choice training: 96 questions per effective batch, 16 per dataset, seed 20261021, and the epoch-three checkpoint after 2,016 updates. Both receive identical candidate exposures, calibration-loss weight five, and separately fitted temperatures minimizing equal-dataset calibration NLL. Table~\ref{tab:training-calibration} ablates the training penalty and temperature under this recipe.
+\label{sec:training-calibration-protocol}
+
+The learning rate is 0.0001 with 61 warmup updates, cosine decay, AdamW weight decay 0.01, gradient clipping at norm one, and language-attention LoRA rank/scaling 16/32. Training comprises 193,536 question exposures. The calibration coefficient of five is the evaluated development setting; the balanced recipe was developed after inspecting earlier benchmark results. The CE control sets this coefficient to zero, retaining the same data, updates, and final-epoch selection. Each model fits a positive scalar temperature on the reserved calibration split before standard testing.
 
 \paragraph{Natural VQA.}
-Both interfaces are separately adapted to A-OKVQA~\citep{schwenk_2022_aokvqa} across three seeds and evaluated on 2,576 internal holdout questions. Training, selection, and calibration roles are disjoint (Appendix~\ref{app:essential}).
+Both interfaces are separately adapted to A-OKVQA~\citep{schwenk_2022_aokvqa} across three seeds and evaluated on 2,576 internal holdout questions. Training, selection, and calibration roles are disjoint.
+
+\paragraph{VQA splits and training.}
+A-OKVQA training uses 12769 questions over 12404 images; selection uses 859 questions over 827 images, and calibration uses 852 questions over 827 images. The internal holdout has 2576 questions over 2482 images, grouped into 2481 resampling components after a reviewed near-duplicate merge. It is split from the official training inventory. Seeds are 20260924, 20260927, and 20260930. Models train for three epochs with learning rate 0.0002 and accumulation over eight questions; LoRA, optimizer, warmup, and clipping settings otherwise follow the shared recipe above. Checkpoint selection maximizes answer-text correctness, then minimizes NLL, then prefers the earlier epoch. Blank and duplicate choices are retained; probability mass for duplicate literal answer strings is summed when computing answer-event losses. Images are uncropped.
 
 \paragraph{Metrics.} We report accuracy, NLL, sum-Brier, and ECE with held-out temperature calibration~\citep{guo_2017_calibration}. Recognition weights datasets equally. Paired intervals resample image clusters for recognition and scenes for relations (Appendix~\ref{app:essential}). Bold marks best point estimates, including displayed ties.
 
