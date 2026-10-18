@@ -39,6 +39,8 @@ Candidates & LM (\%) & Set (\%) & Difference (pp) \\
 \label{tab:full-method-hard}
 \end{table}
 
+This test changes the decision set while holding the image, category inventory, and checkpoint fixed. It therefore evaluates sensitivity to the number and difficulty of alternatives. The separate variable-count experiment below asks whether exposing the model to such variation during training improves this behavior. Keeping these comparisons separate distinguishes inference-time candidate expansion from changes to the training distribution.
+
 \input{dynamic-k-training}
 
 \subsection{Training and post-training calibration}

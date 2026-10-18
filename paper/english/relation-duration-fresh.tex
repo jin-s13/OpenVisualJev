@@ -15,3 +15,5 @@ Complete LM & \textbf{99.7721} & \textbf{99.5443} & \textbf{0.01878} & \textbf{9
 \end{table}
 
 Set exceeds Independent by 98.3073 points in paired median accuracy (scene interval $[97.4609,99.0234]$). Independent succeeds on the maximum control, supporting the role of candidate interaction.
+
+For Independent, a candidate has utility $f(x,q,c_i)$, so the log odds between two shared candidates are $f(x,q,c_i)-f(x,q,c_j)$. Replacing a third candidate changes the softmax denominator but preserves these log odds and their ordering. The paired median test requires the ordering to reverse. Set can satisfy this requirement because its logits condition on the entire candidate collection. The maximum control verifies that the task also contains visual comparisons that independent utilities can learn.
