@@ -1,7 +1,7 @@
 \section{Related work}
 \label{sec:related}
 \paragraph{Multimodal decision models.}
-Visual Jev and PixelJev use option-token readouts~\citep{yu_2026_visualjev,zhou_2026_pixeljev}; Koa-action learns atomic labels under randomized mappings~\citep{dai_2026_koa}. OmniJev combines learned scores, probabilistic supervision, and calibration~\citep{xu_2026_omnijev}, while Chinese-Jev uses a text encoder and heterogeneous supervision~\citep{wang_2026_chinesejev}. Visual Jev shares image prefixes, and FastJEV studies state reuse and layer pruning~\citep{yu_2026_visualjev,ma_2026_fastjev}. OpenVisualJev combines isolated candidate grounding with permutation-equivariant joint comparison.
+Visual Jev and PixelJev use option-token readouts~\citep{yu_2026_visualjev,zhou_2026_pixeljev}; Koa-decision learns atomic labels under randomized mappings~\citep{dai_2026_koa}. \href{https://github.com/tinnel123666888/OmniJev}{OmniJev} combines learned scores, probabilistic supervision, and calibration, while Chinese-Jev uses a text encoder and heterogeneous supervision~\citep{wang_2026_chinesejev}. Visual Jev shares image prefixes, and FastJEV studies state reuse and layer pruning~\citep{yu_2026_visualjev,ma_2026_fastjev}. OpenVisualJev combines isolated candidate grounding with permutation-equivariant joint comparison.
 
 \paragraph{Set-dependent choice.}
 Deep Sets and Set Transformer provide invariant and equivariant representations with learned interactions~\citep{zaheer_2017_deepsets,lee_2019_set}. FETA and FATE model utilities that depend on the surrounding alternatives~\citep{pfannschmidt_2019_context}. We apply these principles to multimodal candidates and test both preference reversals and order stability.
