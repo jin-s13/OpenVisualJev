@@ -1,6 +1,6 @@
 \section{Decision interface and model structure}
 \input{method-figure}
-For an image $x$, a question $q$, and runtime-supplied candidate texts $C=(c_i)_{i=1}^{K}$, the model returns a normalized distribution over the current candidate slots. External question and candidate identifiers associate outputs with inputs; pointer prompts contain the image, question, and candidate text. This work studies mutually exclusive visual Choice decisions. The output distribution is defined over the supplied candidate set, and a held-out calibration stage adjusts its confidence.
+Given an image $x$, a question $q$, and runtime candidate texts $C=(c_i)_{i=1}^{K}$, OpenVisualJev returns a normalized distribution over mutually exclusive candidate slots. External identifiers associate outputs with inputs; prompts contain image, question, and candidate content.
 
 \subsection{Tree-masked multimodal encoding}
 We organize the input as a tree with a shared image prefix, a question prefix for each decision, and separate query and candidate suffixes. Common prefixes appear once in the packed sequence. A tree attention mask gives each token access to its causal predecessors within its segment and to all tokens on its ancestor path. Sibling candidate suffixes and distinct question branches are isolated. This organization shares visual and question context while preserving candidate-specific representations.
@@ -9,8 +9,6 @@ We organize the input as a tree with a shared image prefix, a question prefix fo
 Let $E_\theta$ denote the image--text backbone and its final valid-token representation along a root-to-leaf path. The query leaf yields $u=E_\theta(x,q)$, and candidate leaf $i$ yields $h_i=E_\theta(x,q\mathbin{\Vert}\texttt{Candidate:}\mathbin{\Vert}c_i)$. These expressions identify the context visible to each leaf. A packed backbone forward computes all leaf representations using shared parameters. Visual features are injected at the shared image prefix. Each token retains its original branch-local multimodal position, so moving a candidate within the packed input preserves its positional coordinates and visible context.
 
 \subsection{Set interaction and dynamic pointer}
-The leaf representations ground each candidate in the image and question. A question-local set module then compares the available alternatives and produces their decision scores.
-
 \paragraph{Position-free candidate interaction.}
 Writing the candidate representations as rows of $H$, we apply a shared input projection followed by a position-free candidate module $S_\phi$. The Set module uses self-attention over candidate representations, followed by shared per-row transformations. The query representation remains separate from this candidate self-attention stack. Candidate logits and probabilities are
 \begin{equation}
@@ -29,8 +27,6 @@ With a unique maximum, the selected candidate identity is preserved under candid
 The tree mask isolates distinct question branches, while Set attention and probability normalization operate within each question. These two levels of isolation keep each question's scores independent of other questions sharing the image prefix. Within each question, Set attention conditions every candidate representation on the full candidate set. The relative probability $p_i/p_j=\exp(s_i-s_j)$ therefore depends on set-conditioned logits. Changing the candidate set can change the relative preference between two existing candidates while preserving isolation from other questions.
 
 \subsection{Training and probability calibration}
-Cross-entropy supervises the correct candidate on each example. We complement this supervision with a group-level confidence objective during training and scalar temperature fitting after training.
-
 \paragraph{Calibration-aware training.}
 We train the scorer with cross-entropy and a dataset-wise mean-confidence regularizer, adapting the confidence--accuracy alignment principle of DCA~\citep{liang_2020_dca}. For an effective batch partitioned into dataset groups $B(d)$, let $a_n=\arg\max_i p_{n,i}$, $c_n=\max_i p_{n,i}$, and $r_n=\mathrm{I}[a_n=y_n]$. Let $\mathcal D$ denote the datasets represented in the effective batch. We optimize
 \begin{equation}

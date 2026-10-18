@@ -17,7 +17,7 @@ Aircraft & 81.61 & \textbf{82.51} & +0.90 \\
 Equal-dataset mean & 90.09 & \textbf{90.35} & +0.27 \\
 \bottomrule
 \end{tabular}
-\caption{Unified mixed-dataset models on author-defined four-choice test records, using the same shuffled candidate sets for both methods. Each method uses one balanced CE-plus-calibration checkpoint across all six datasets, followed by its own held-out temperature. One training seed; differences are Set minus LM, computed before rounding.}
+\caption{Six-dataset accuracy on identical author-defined four-choice records. Each method uses one balanced CE-plus-calibration checkpoint and a held-out temperature. One training seed; differences are Set minus LM before rounding.}
 \label{tab:unified-standard}
 \end{table}
 
@@ -35,14 +35,14 @@ Candidates & LM (\%) & Set (\%) & Difference (pp) \\
 20 & 80.26 & \textbf{82.06} & +1.80 \\
 \bottomrule
 \end{tabular}
-\caption{Difficult-candidate count transfer of the complete-method checkpoints in Table~\ref{tab:unified-standard}. Training uses four candidates; test candidates are mined with the fixed image--text ranking. Values are six-dataset mean accuracies from one shared training seed. Differences are Set minus LM.}
+\caption{Difficult-candidate transfer of the four-choice-trained models in Table~\ref{tab:unified-standard}. Test distractors use a fixed image--text ranking. Values are six-dataset mean accuracies; differences are Set minus LM.}
 \label{tab:full-method-hard}
 \end{table}
 
 \input{dynamic-k-training}
 
 \subsection{Training and post-training calibration}
-Temperature scaling improves NLL and Brier for both models without changing accuracy (Table~\ref{tab:unified-probability}). After scaling, LM has lower NLL and Set has a lower Brier point estimate; the paired Brier difference interval includes zero. Per-dataset calibration curves appear in Appendix Figure~\ref{fig:calibration-analysis}.
+Temperature scaling improves NLL and Brier for both models without changing accuracy (Table~\ref{tab:unified-probability}). After scaling, LM has lower NLL and Set has a lower Brier point estimate; the paired Brier difference interval includes zero. Figure~\ref{fig:calibration-analysis} shows how the shared temperature adjusts confidence across datasets.
 \begin{table}[htbp]
 \centering\small
 \begin{tabular}{lrrrr}
@@ -62,6 +62,13 @@ ECE & 0.0337 & 0.0448 & \textbf{0.0224} & 0.0355 \\
 
 
 
+
+\begin{figure}[!t]
+\centering
+\includegraphics[width=\linewidth]{../figures/calibration-analysis.pdf}
+\caption{Calibration of the complete Set model. Points show mean confidence and accuracy in fifteen equal-count bins; the diagonal denotes agreement. One temperature fitted on reserved data adjusts all six datasets while preserving predictions.}
+\label{fig:calibration-analysis}
+\end{figure}
 
 \paragraph{Training-time calibration.}
 Under the same balanced recipe, the training penalty improves raw NLL, Brier, and ECE (Table~\ref{tab:training-calibration}). Combining it with temperature scaling further reduces NLL and Brier relative to temperature-scaled CE training. The NLL difference is $-0.01539$ (paired interval $[-0.01953,-0.01142]$), with a small accuracy change of $-0.1273$ points. Appendix~\ref{sec:training-calibration-protocol} gives the recipe.

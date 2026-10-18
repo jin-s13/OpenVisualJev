@@ -17,6 +17,8 @@ Images contain colored objects with distinct sizes. Paired three-choice question
 \paragraph{VQA splits and training.}
 A-OKVQA training uses 12769 questions over 12404 images; selection uses 859 questions over 827 images, and calibration uses 852 questions over 827 images. The internal holdout has 2576 questions over 2482 images, grouped into 2481 resampling components after a reviewed near-duplicate merge. It is split from the official training inventory. Seeds are 20260924, 20260927, and 20260930. Models train for three epochs with learning rate 0.0002 and accumulation over eight questions; LoRA, optimizer, warmup, and clipping settings otherwise follow the shared recipe above. Checkpoint selection maximizes answer-text correctness, then minimizes NLL, then prefers the earlier epoch. Blank and duplicate choices are retained; probability mass for duplicate literal answer strings is summed when computing answer-event losses. Images are uncropped.
 
+\input{vqa-native-summary}
+
 \paragraph{VQA comparison scope.}
 The main text presents the registered native-LM secondary comparison. The original primary contrast used a canonically sorted LM input: Set-minus-canonical-LM accuracy was $-0.5694$ percentage points, with conditional interval $[-1.2861,0.1289]$. The original primary and secondary analysis roles are retained. For native LM, raw Set-minus-LM NLL and Brier differences are $+0.1933$ and $+0.0243$; their exploratory crossed intervals are $[0.0779,0.3260]$ and $[0.0078,0.0407]$. Scaled differences are $+0.0116$ for NLL and $+0.0087$ for Brier, with crossed intervals $[-0.0054,0.0284]$ and $[-0.0025,0.0204]$. The registered analysis estimates accuracy and probability-loss differences with intervals.
 
@@ -38,20 +40,10 @@ For the registered VQA protocol, blank and duplicate candidate strings are prese
 \end{equation}
 Labels supply supervision to the loss and evaluator; forward prompts contain the image, question, and candidate text. This convention preserves the official answer-text task while keeping slot and answer-event probabilities distinct.
 
-\subsection{Additional visual analyses}
-\begin{figure}[htbp]
-\centering
-\includegraphics[width=\linewidth]{../figures/decision-analysis.pdf}
-\caption{Complete-method structural analysis. (a) Fraction of questions whose predicted candidate identity changes across all twenty-four orders. (b) Six-dataset mean accuracy on difficult candidate sets. (c) Set-minus-LM accuracy with marginal paired image-cluster bootstrap intervals. All panels use the same complete-method checkpoints as Table~\ref{tab:unified-standard}; the training candidate count is four.}
-\label{fig:decision-analysis}
-\end{figure}
 
-\begin{figure}[htbp]
-\centering
-\includegraphics[width=\linewidth]{../figures/calibration-analysis.pdf}
-\caption{Probability calibration of the complete Set model on the six recognition datasets. Each curve uses fifteen equal-count confidence bins; points show mean top-choice confidence and observed accuracy. The dashed diagonal denotes matched confidence and accuracy. Temperature scaling uses the single scalar fitted on the reserved calibration data, with unchanged predictions.}
-\label{fig:calibration-analysis}
-\end{figure}
+
+
+
 
 \subsection{Supplementary evaluation details}
 \paragraph{Candidate-count study.}

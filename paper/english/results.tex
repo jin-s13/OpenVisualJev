@@ -24,11 +24,17 @@ For the complete-method checkpoints used in Table~\ref{tab:unified-standard}, LM
 
 
 
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=\linewidth]{../figures/decision-analysis.pdf}
+\caption{Complete-method structural analysis. (a) Fraction of questions whose predicted candidate identity changes across all twenty-four orders. (b) Six-dataset mean accuracy on difficult candidate sets. (c) Set-minus-LM accuracy with marginal paired image-cluster bootstrap intervals. All panels use the same complete-method checkpoints as Table~\ref{tab:unified-standard}; the training candidate count is four.}
+\label{fig:decision-analysis}
+\end{figure}
+
 \subsection{Candidate interaction enables preference reversals}
 Paired three-choice questions share two objects but replace the third with a smaller or larger extreme, reversing the correct median. Candidate-independent utilities cannot reverse the shared objects' ranking. We test fixed checkpoints on 512 fresh scenes (2,048 questions), averaging three training seeds; a largest-object task controls for ordinary ranking.
 \input{relation-duration-fresh}
 \input{unified-results}
 
 \subsection{Natural VQA performance}
-On A-OKVQA, Set remains close to the native LM, with an accuracy decrease of 0.53 points across three seeds (Table~\ref{tab:vqa-native-summary}; exploratory interval $[-1.7041,0.6406]$). Scaled probability losses favor LM. This test evaluates retention of general VQA capability; split and uncertainty details are in Appendix~\ref{app:essential}.
-\input{vqa-native-summary}
+On A-OKVQA, Set remains close to the native LM, with an accuracy decrease of 0.53 points across three seeds (Appendix Table~\ref{tab:vqa-native-summary}; exploratory interval $[-1.7041,0.6406]$). Scaled probability losses favor LM. This test evaluates retention of general VQA capability; split and uncertainty details are in Appendix~\ref{app:essential}.
