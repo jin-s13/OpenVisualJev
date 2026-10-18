@@ -84,7 +84,6 @@ The interface accepts an image and one or more questions, each with 2–20 candi
 @techreport{jin2026openvisualjev,
   title       = {{OpenVisualJev}: Design and Analysis of a Multimodal Decision Model},
   author      = {Jin, Sheng},
-  institution = {SenseTime Research and Tetras.AI},
   year        = {2026},
   type        = {Technical Report},
   url         = {https://github.com/jin-s13/OpenVisualJev}
